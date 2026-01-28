@@ -19,6 +19,12 @@ enum Role {
   STUDENT
 }
 
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
 model User {
   id           String        @id @default(uuid())
   name         String
@@ -28,6 +34,8 @@ model User {
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
   tutorProfile TutorProfile?
+  bookingsAsStudent Booking[] @relation("StudentBookings")
+  bookingsAsTutor   Booking[] @relation("TutorBookings")
 
   @@map("users")
 }
@@ -45,4 +53,17 @@ model TutorProfile {
   user        User     @relation(fields: [userId], references: [id])
 
   @@map("tutor_profiles")
+}
+
+model Booking {
+  id        String        @id @default(uuid())
+  studentId String        @map("student_id")
+  tutorId   String        @map("tutor_id")
+  dateTime  DateTime      @map("date_time")
+  status    BookingStatus @default(PENDING)
+  createdAt DateTime      @default(now()) @map("created_at")
+  student   User          @relation("StudentBookings", fields: [studentId], references: [id])
+  tutor     User          @relation("TutorBookings", fields: [tutorId], references: [id])
+
+  @@map("bookings")
 }
