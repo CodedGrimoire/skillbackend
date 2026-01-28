@@ -20,10 +20,10 @@ enum Role {
 }
 
 enum BookingStatus {
-  UPCOMING
-  COMPLETED
   PENDING
   CONFIRMED
+  UPCOMING
+  COMPLETED
   CANCELLED
 }
 
