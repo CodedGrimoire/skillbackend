@@ -5,6 +5,7 @@ const prisma = require('./src/config/prisma');
 const authRoutes = require('./src/routes/auth.routes');
 const tutorRoutes = require('./src/routes/tutor.routes');
 const bookingRoutes = require('./src/routes/booking.routes');
+const reviewRoutes = require('./src/routes/review.routes');
 const seedAdmin = require('./src/utils/seedAdmin');
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/tutors', tutorRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Test route
 app.get('/', (req, res) => {

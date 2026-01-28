@@ -36,6 +36,8 @@ model User {
   tutorProfile TutorProfile?
   bookingsAsStudent Booking[] @relation("StudentBookings")
   bookingsAsTutor   Booking[] @relation("TutorBookings")
+  reviewsAsStudent  Review[]  @relation("StudentReviews")
+  reviewsAsTutor    Review[]  @relation("TutorReviews")
 
   @@map("users")
 }
@@ -66,4 +68,17 @@ model Booking {
   tutor     User          @relation("TutorBookings", fields: [tutorId], references: [id])
 
   @@map("bookings")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  studentId String   @map("student_id")
+  tutorId   String   @map("tutor_id")
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  student   User     @relation("StudentReviews", fields: [studentId], references: [id])
+  tutor     User     @relation("TutorReviews", fields: [tutorId], references: [id])
+
+  @@map("reviews")
 }
