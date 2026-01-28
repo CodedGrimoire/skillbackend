@@ -25,6 +25,37 @@ const getAdminStats = async (_req, res) => {
   }
 };
 
+// GET /api/admin/bookings
+const getAdminBookings = async (_req, res) => {
+  try {
+    const bookings = await prisma.booking.findMany({
+      include: {
+        student: { select: { id: true, name: true, email: true, role: true } },
+        tutor:   { select: { id: true, name: true, email: true, role: true, tutorProfile: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json({ success: true, bookings });
+  } catch (error) {
+    console.error('Get admin bookings error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
+// GET /api/admin/categories
+const getAdminCategories = async (_req, res) => {
+  try {
+    const categories = await prisma.category.findMany({
+      orderBy: { name: 'asc' }
+    });
+    res.json({ success: true, categories });
+  } catch (error) {
+    console.error('Get admin categories error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
 // GET /api/admin/users
 const getAdminUsers = async (req, res) => {
   try {
@@ -51,4 +82,4 @@ const getAdminUsers = async (req, res) => {
   }
 };
 
-module.exports = { getAdminStats, getAdminUsers };
+module.exports = { getAdminStats, getAdminUsers, getAdminBookings, getAdminCategories };

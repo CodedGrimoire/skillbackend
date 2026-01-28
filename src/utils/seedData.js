@@ -170,7 +170,16 @@ const seedData = async () => {
       })
     ]);
 
-    console.log(`✅ Created ${bookings.length} bookings`);
+  console.log(`✅ Created ${bookings.length} bookings`);
+
+  // Create Categories
+  const categories = await Promise.all([
+    prisma.category.create({ data: { name: 'Mathematics' } }),
+    prisma.category.create({ data: { name: 'Science' } }),
+    prisma.category.create({ data: { name: 'English' } }),
+    prisma.category.create({ data: { name: 'Programming' } })
+  ]);
+  console.log(`✅ Created ${categories.length} categories`);
 
     // Create Reviews
     const reviews = await Promise.all([

@@ -46,6 +46,14 @@ Booking status enum: `UPCOMING | COMPLETED | CANCELLED | PENDING | CONFIRMED` (d
   Response: `{ success: true, users: [{ id, name, email, role, createdAt, updatedAt, tutorProfile? }] }`  
   cURL: `curl -H "Authorization: Bearer $TOKEN" "$BASE/api/admin/users?role=TUTOR"`
 
+- `GET /api/admin/bookings` 🔒 role=ADMIN  
+  Returns all bookings with student and tutor info.  
+  cURL: `curl -H "Authorization: Bearer $TOKEN" $BASE/api/admin/bookings`
+
+- `GET /api/admin/categories` 🔒 role=ADMIN  
+  Returns all categories (name, id, timestamps).  
+  cURL: `curl -H "Authorization: Bearer $TOKEN" $BASE/api/admin/categories`
+
 ## Tutors
 - `GET /api/tutors` — list tutors with profiles.  
 - `GET /api/tutors/:id` — tutor detail.  
