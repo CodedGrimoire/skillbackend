@@ -4,7 +4,7 @@ const prisma = require('../config/prisma');
 const createReview = async (req, res) => {
   try {
     const { tutorId, rating, comment } = req.body;
-    const studentId = req.user.userId;
+    const studentId = req.user.id || req.user.userId;
 
     // Validation
     if (!tutorId || !rating) {

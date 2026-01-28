@@ -20,6 +20,8 @@ enum Role {
 }
 
 enum BookingStatus {
+  UPCOMING
+  COMPLETED
   PENDING
   CONFIRMED
   CANCELLED
@@ -62,7 +64,7 @@ model Booking {
   studentId String        @map("student_id")
   tutorId   String        @map("tutor_id")
   dateTime  DateTime      @map("date_time")
-  status    BookingStatus @default(PENDING)
+  status    BookingStatus @default(UPCOMING)
   createdAt DateTime      @default(now()) @map("created_at")
   student   User          @relation("StudentBookings", fields: [studentId], references: [id])
   tutor     User          @relation("TutorBookings", fields: [tutorId], references: [id])

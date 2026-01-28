@@ -18,18 +18,23 @@ const authenticate = (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Attach decoded payload to request
-    req.user = decoded;
+    // Normalize decoded payload onto req.user
+    req.user = {
+      id: decoded.id || decoded.userId,
+      userId: decoded.userId || decoded.id, // keep backward compat
+      role: decoded.role,
+      email: decoded.email
+    };
 
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ error: 'Invalid token' });
+      return res.status(401).json({ success: false, error: 'Invalid token' });
     }
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Token expired' });
+      return res.status(401).json({ success: false, error: 'Token expired' });
     }
-    return res.status(401).json({ error: 'Authentication failed' });
+    return res.status(401).json({ success: false, error: 'Authentication failed' });
   }
 };
 

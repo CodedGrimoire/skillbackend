@@ -36,7 +36,7 @@ const register = async (req, res) => {
 
     // Generate token
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { id: user.id, userId: user.id, role: user.role, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -45,12 +45,13 @@ const register = async (req, res) => {
     const { password: _, ...userWithoutPassword } = user;
 
     res.status(201).json({
+      success: true,
       token,
       user: userWithoutPassword
     });
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
@@ -70,7 +71,7 @@ const login = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ success: false, error: 'Invalid email or password' });
     }
 
     // Verify password
@@ -82,7 +83,7 @@ const login = async (req, res) => {
 
     // Generate token
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { id: user.id, userId: user.id, role: user.role, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -91,12 +92,13 @@ const login = async (req, res) => {
     const { password: _, ...userWithoutPassword } = user;
 
     res.json({
+      success: true,
       token,
       user: userWithoutPassword
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
@@ -104,25 +106,26 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
+      where: { id: req.user.id || req.user.userId },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        tutorProfile: true,
         createdAt: true,
         updatedAt: true
       }
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    res.json({ user });
+    res.json({ success: true, user });
   } catch (error) {
     console.error('Get me error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
