@@ -7,9 +7,6 @@ const getTutors = async (req, res) => {
       where: {
         role: 'TUTOR'
       },
-      include: {
-        tutorProfile: true
-      },
       select: {
         id: true,
         name: true,
@@ -45,9 +42,6 @@ const getTutorById = async (req, res) => {
       where: {
         id,
         role: 'TUTOR'
-      },
-      include: {
-        tutorProfile: true
       },
       select: {
         id: true,
