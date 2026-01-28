@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const prisma = require('./src/config/prisma');
+const authRoutes = require('./src/routes/auth.routes');
 
 const app = express();
 
@@ -10,6 +11,9 @@ app.use(cors({
   origin: process.env.CLIENT_URL
 }));
 app.use(express.json());
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 // Test route
 app.get('/', (req, res) => {
