@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const prisma = require('./src/config/prisma');
 const authRoutes = require('./src/routes/auth.routes');
+const seedAdmin = require('./src/utils/seedAdmin');
 
 const app = express();
 
@@ -34,8 +35,11 @@ async function testDatabaseConnection() {
 // Server
 const PORT = process.env.PORT || 3000;
 
-// Start server after DB connection test
-testDatabaseConnection().then(() => {
+// Start server after DB connection test and admin seeding
+testDatabaseConnection().then(async () => {
+  // Seed admin user if it doesn't exist
+  await seedAdmin();
+  
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   }).on('error', (err) => {
