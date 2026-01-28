@@ -20,13 +20,29 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(STUDENT)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  role         Role          @default(STUDENT)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  tutorProfile TutorProfile?
 
   @@map("users")
+}
+
+model TutorProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  bio         String?
+  skills      String?
+  hourlyRate  Float    @default(0)
+  availability String?
+  rating      Float    @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("tutor_profiles")
 }
