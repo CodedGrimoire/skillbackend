@@ -138,6 +138,47 @@ const updateTutorProfile = async (req, res) => {
   }
 };
 
+// Get current tutor's profile
+const getTutorProfile = async (req, res) => {
+  try {
+    const tutorId = req.user.id || req.user.userId;
+
+    // Get tutor with profile
+    const tutor = await prisma.user.findUnique({
+      where: { id: tutorId, role: 'TUTOR' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        tutorProfile: {
+          select: {
+            id: true,
+            bio: true,
+            skills: true,
+            hourlyRate: true,
+            availability: true,
+            rating: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
+      }
+    });
+
+    if (!tutor) {
+      return res.status(404).json({ success: false, error: 'Tutor not found' });
+    }
+
+    res.json({ success: true, profile: tutor.tutorProfile || null, user: tutor });
+  } catch (error) {
+    console.error('Get tutor profile error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
 // Update tutor availability string
 const updateTutorAvailability = async (req, res) => {
   try {
@@ -170,6 +211,7 @@ const updateTutorAvailability = async (req, res) => {
 module.exports = {
   getTutors,
   getTutorById,
+  getTutorProfile,
   updateTutorProfile,
   updateTutorAvailability
 };
