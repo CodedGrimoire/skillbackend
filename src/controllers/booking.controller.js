@@ -115,6 +115,87 @@ const getMyBookings = async (req, res) => {
   }
 };
 
+// Get bookings for current user (student or tutor, admin gets all)
+const getBookings = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.userId;
+    const role = req.user.role;
+
+    let where = {};
+    if (role === 'STUDENT') {
+      where = { studentId: userId };
+    } else if (role === 'TUTOR') {
+      where = { tutorId: userId };
+    } // ADMIN gets all
+
+    const bookings = await prisma.booking.findMany({
+      where,
+      include: {
+        student: { select: { id: true, name: true, email: true } },
+        tutor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            tutorProfile: {
+              select: { bio: true, skills: true, hourlyRate: true, rating: true }
+            }
+          }
+        }
+      },
+      orderBy: { dateTime: 'desc' }
+    });
+
+    res.json({ success: true, bookings });
+  } catch (error) {
+    console.error('Get bookings error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
+// Get booking details by id (only participant or admin)
+const getBookingById = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const userId = req.user.id || req.user.userId;
+    const role = req.user.role;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        student: { select: { id: true, name: true, email: true } },
+        tutor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            tutorProfile: {
+              select: { bio: true, skills: true, hourlyRate: true, rating: true }
+            }
+          }
+        }
+      }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ success: false, error: 'Booking not found' });
+    }
+
+    if (
+      role !== 'ADMIN' &&
+      booking.studentId !== userId &&
+      booking.tutorId !== userId
+    ) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    res.json({ success: true, booking });
+  } catch (error) {
+    console.error('Get booking by id error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
 // Get bookings for current tutor
 const getTutorBookings = async (req, res) => {
   try {
@@ -204,6 +285,8 @@ const getBookingStats = async (req, res) => {
 module.exports = {
   createBooking,
   getMyBookings,
+  getBookings,
+  getBookingById,
   getTutorBookings,
   getBookingStats
 };

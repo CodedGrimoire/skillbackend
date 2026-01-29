@@ -82,4 +82,27 @@ const getAdminUsers = async (req, res) => {
   }
 };
 
-module.exports = { getAdminStats, getAdminUsers, getAdminBookings, getAdminCategories };
+// PATCH /api/admin/users/:id (update role or status fields)
+const updateAdminUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role, status } = req.body; // status kept for compatibility; stored as role if provided
+
+    if (!role && !status) {
+      return res.status(400).json({ success: false, error: 'role or status is required' });
+    }
+
+    const newRole = role || status;
+    const updated = await prisma.user.update({
+      where: { id },
+      data: { role: newRole }
+    });
+
+    res.json({ success: true, user: updated });
+  } catch (error) {
+    console.error('Update admin user error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
+module.exports = { getAdminStats, getAdminUsers, getAdminBookings, getAdminCategories, updateAdminUser };

@@ -22,6 +22,9 @@ Authentication: Bearer JWT in `Authorization` header. Endpoints marked 🔒 requ
   Body: `{ tutorId, dateTime }` (ISO string)  
   Response: `{ success: true, booking }`
 
+- `GET /api/bookings` 🔒 any role  
+  Returns current user’s bookings (student → their bookings, tutor → their sessions, admin → all).  
+
 - `GET /api/bookings/my` 🔒 role=STUDENT  
   Returns bookings for logged-in student.  
   cURL: `curl -H "Authorization: Bearer $TOKEN" $BASE/api/bookings/my`
@@ -33,6 +36,9 @@ Authentication: Bearer JWT in `Authorization` header. Endpoints marked 🔒 requ
 - `GET /api/bookings/stats` 🔒 role=STUDENT  
   Returns counts: `{ stats: { upcoming, completed, cancelled } }`  
   cURL: `curl -H "Authorization: Bearer $TOKEN" $BASE/api/bookings/stats`
+
+- `GET /api/bookings/:id` 🔒 any role (must be student/tutor on booking or admin)  
+  Returns booking detail with student/tutor info.
 
 Booking status enum: `UPCOMING | COMPLETED | CANCELLED | PENDING | CONFIRMED` (default is UPCOMING).
 
@@ -53,6 +59,10 @@ Booking status enum: `UPCOMING | COMPLETED | CANCELLED | PENDING | CONFIRMED` (d
 - `GET /api/admin/categories` 🔒 role=ADMIN  
   Returns all categories (name, id, timestamps).  
   cURL: `curl -H "Authorization: Bearer $TOKEN" $BASE/api/admin/categories`
+
+- `PATCH /api/admin/users/:id` 🔒 role=ADMIN  
+  Body: `{ role: "ADMIN|TUTOR|STUDENT" }` (alias `status` accepted).  
+  Updates user role/status.
 
 ## Tutors
 - `GET /api/tutors` — list tutors with profiles; filters: `search`, `minRate`, `maxRate`, `minRating`.  
