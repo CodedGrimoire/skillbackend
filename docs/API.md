@@ -58,6 +58,8 @@ Booking status enum: `UPCOMING | COMPLETED | CANCELLED | PENDING | CONFIRMED` (d
 - `GET /api/tutors` — list tutors with profiles; filters: `search`, `minRate`, `maxRate`, `minRating`.  
 - `GET /api/tutors/:id` — tutor detail.  
 - `GET /api/tutors/search?query=...` — search tutors.
+- `PUT /api/tutor/profile` 🔒 role=TUTOR — update bio/skills/hourlyRate.  
+- `PUT /api/tutor/availability` 🔒 role=TUTOR — update availability string.
 
 ## Categories
 - `GET /api/categories` — public list of all categories.
