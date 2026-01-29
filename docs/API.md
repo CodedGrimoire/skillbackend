@@ -55,9 +55,12 @@ Booking status enum: `UPCOMING | COMPLETED | CANCELLED | PENDING | CONFIRMED` (d
   cURL: `curl -H "Authorization: Bearer $TOKEN" $BASE/api/admin/categories`
 
 ## Tutors
-- `GET /api/tutors` — list tutors with profiles.  
+- `GET /api/tutors` — list tutors with profiles; filters: `search`, `minRate`, `maxRate`, `minRating`.  
 - `GET /api/tutors/:id` — tutor detail.  
 - `GET /api/tutors/search?query=...` — search tutors.
+
+## Categories
+- `GET /api/categories` — public list of all categories.
 
 ## Reviews
 - `POST /api/reviews` 🔒 role=STUDENT  
