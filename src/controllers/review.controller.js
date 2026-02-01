@@ -157,7 +157,51 @@ const getTutorReviews = async (req, res) => {
   }
 };
 
+// Check if current student has reviewed a tutor
+const checkStudentReview = async (req, res) => {
+  try {
+    const { tutorId } = req.params;
+    const studentId = req.user.id || req.user.userId;
+
+    // Verify tutor exists
+    const tutor = await prisma.user.findFirst({
+      where: {
+        id: tutorId,
+        role: 'TUTOR'
+      }
+    });
+
+    if (!tutor) {
+      return res.status(404).json({ success: false, error: 'Tutor not found' });
+    }
+
+    // Check if student has reviewed this tutor
+    const review = await prisma.review.findFirst({
+      where: {
+        studentId,
+        tutorId
+      },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true
+      }
+    });
+
+    res.json({
+      success: true,
+      hasReviewed: !!review,
+      review: review || null
+    });
+  } catch (error) {
+    console.error('Check student review error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
 module.exports = {
   createReview,
-  getTutorReviews
+  getTutorReviews,
+  checkStudentReview
 };
