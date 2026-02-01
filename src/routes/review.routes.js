@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createReview, getTutorReviews, checkStudentReview } = require('../controllers/review.controller');
+const { createReview, getTutorReviews, checkStudentReview, updateReview, deleteReview } = require('../controllers/review.controller');
 const { authenticate } = require('../middlewares/auth.middleware');
 const { authorizeRoles } = require('../middlewares/role.middleware');
 
@@ -12,5 +12,12 @@ router.get('/check/:tutorId', authenticate, authorizeRoles('STUDENT'), checkStud
 
 // Get reviews for a tutor (public)
 router.get('/tutor/:id', getTutorReviews);
+
+// Update review (protected - STUDENT who created it or ADMIN)
+router.put('/:id', authenticate, updateReview);
+router.patch('/:id', authenticate, updateReview);
+
+// Delete review (protected - STUDENT who created it or ADMIN)
+router.delete('/:id', authenticate, deleteReview);
 
 module.exports = router;

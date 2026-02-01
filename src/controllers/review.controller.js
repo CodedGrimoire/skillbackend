@@ -200,8 +200,143 @@ const checkStudentReview = async (req, res) => {
   }
 };
 
+// Update a review
+const updateReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+    const userId = req.user.id || req.user.userId;
+    const role = req.user.role;
+
+    // Validation
+    if (rating !== undefined && (rating < 1 || rating > 5 || !Number.isInteger(rating))) {
+      return res.status(400).json({ success: false, error: 'Rating must be an integer between 1 and 5' });
+    }
+
+    // Get review
+    const review = await prisma.review.findUnique({
+      where: { id },
+      include: {
+        tutor: {
+          select: {
+            id: true,
+            role: true
+          }
+        }
+      }
+    });
+
+    if (!review) {
+      return res.status(404).json({ success: false, error: 'Review not found' });
+    }
+
+    // Check permissions: only the student who created the review or admin can update
+    if (role !== 'ADMIN' && review.studentId !== userId) {
+      return res.status(403).json({ success: false, error: 'You can only update your own reviews' });
+    }
+
+    // Update review
+    const updatedReview = await prisma.review.update({
+      where: { id },
+      data: {
+        ...(rating !== undefined && { rating }),
+        ...(comment !== undefined && { comment })
+      },
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    // Recalculate tutor's average rating
+    const allReviews = await prisma.review.findMany({
+      where: { tutorId: review.tutorId },
+      select: { rating: true }
+    });
+
+    const averageRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+
+    // Update tutor profile rating
+    await prisma.tutorProfile.update({
+      where: { userId: review.tutorId },
+      data: { rating: Math.round(averageRating * 10) / 10 }
+    });
+
+    res.json({ success: true, review: updatedReview });
+  } catch (error) {
+    console.error('Update review error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
+// Delete a review
+const deleteReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id || req.user.userId;
+    const role = req.user.role;
+
+    // Get review
+    const review = await prisma.review.findUnique({
+      where: { id },
+      include: {
+        tutor: {
+          select: {
+            id: true,
+            role: true
+          }
+        }
+      }
+    });
+
+    if (!review) {
+      return res.status(404).json({ success: false, error: 'Review not found' });
+    }
+
+    // Check permissions: only the student who created the review or admin can delete
+    if (role !== 'ADMIN' && review.studentId !== userId) {
+      return res.status(403).json({ success: false, error: 'You can only delete your own reviews' });
+    }
+
+    const tutorId = review.tutorId;
+
+    // Delete review
+    await prisma.review.delete({
+      where: { id }
+    });
+
+    // Recalculate tutor's average rating (excluding deleted review)
+    const allReviews = await prisma.review.findMany({
+      where: { tutorId },
+      select: { rating: true }
+    });
+
+    const averageRating = allReviews.length > 0
+      ? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
+      : 0;
+
+    // Update tutor profile rating
+    await prisma.tutorProfile.update({
+      where: { userId: tutorId },
+      data: { rating: Math.round(averageRating * 10) / 10 }
+    });
+
+    res.json({ success: true, message: 'Review deleted successfully' });
+  } catch (error) {
+    console.error('Delete review error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
 module.exports = {
   createReview,
   getTutorReviews,
-  checkStudentReview
+  checkStudentReview,
+  updateReview,
+  deleteReview
 };
