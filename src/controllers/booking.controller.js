@@ -282,11 +282,72 @@ const getBookingStats = async (req, res) => {
   }
 };
 
+// Mark booking as completed
+const completeBooking = async (req, res) => {
+  try {
+    const bookingId = req.params.id || req.body.bookingId;
+    const userId = req.user.id || req.user.userId;
+    const role = req.user.role;
+
+    if (!bookingId) {
+      return res.status(400).json({ success: false, error: 'Booking ID is required' });
+    }
+
+    // Get booking
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        student: { select: { id: true, name: true } },
+        tutor: { select: { id: true, name: true } }
+      }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ success: false, error: 'Booking not found' });
+    }
+
+    // Verify user is either the student or tutor (or admin)
+    if (
+      role !== 'ADMIN' &&
+      booking.studentId !== userId &&
+      booking.tutorId !== userId
+    ) {
+      return res.status(403).json({ success: false, error: 'You can only complete your own bookings' });
+    }
+
+    // Check if booking is already completed
+    if (booking.status === 'COMPLETED') {
+      return res.status(400).json({ success: false, error: 'Booking is already completed' });
+    }
+
+    // Check if booking is cancelled
+    if (booking.status === 'CANCELLED') {
+      return res.status(400).json({ success: false, error: 'Cannot complete a cancelled booking' });
+    }
+
+    // Update booking status to COMPLETED
+    const updatedBooking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: 'COMPLETED' },
+      include: {
+        student: { select: { id: true, name: true, email: true } },
+        tutor: { select: { id: true, name: true, email: true } }
+      }
+    });
+
+    res.json({ success: true, booking: updatedBooking });
+  } catch (error) {
+    console.error('Complete booking error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
 module.exports = {
   createBooking,
   getMyBookings,
   getBookings,
   getBookingById,
   getTutorBookings,
-  getBookingStats
+  getBookingStats,
+  completeBooking
 };
