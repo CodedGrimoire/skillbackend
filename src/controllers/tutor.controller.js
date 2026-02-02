@@ -1,8 +1,15 @@
 const prisma = require('../config/prisma');
 
-// Get all tutors (with optional filters)
-const getTutors = async (req, res) => {
-  try {
+
+const getTutors = async (req, res) => 
+  
+  
+  
+  {
+  try 
+  
+  
+  {
     const { search, minRate, maxRate, minRating } = req.query;
 
     const where = {
@@ -54,7 +61,7 @@ const getTutors = async (req, res) => {
   }
 };
 
-// Get single tutor by ID
+
 const getTutorById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -105,12 +112,12 @@ const updateTutorProfile = async (req, res) => {
     const tutorId = req.user.id || req.user.userId;
     const { bio, skills, hourlyRate } = req.body;
 
-    // Basic validation
+  
     if (hourlyRate !== undefined && isNaN(Number(hourlyRate))) {
       return res.status(400).json({ success: false, error: 'hourlyRate must be a number' });
     }
 
-    // Ensure tutor exists
+   
     const tutor = await prisma.user.findUnique({ where: { id: tutorId, role: 'TUTOR' } });
     if (!tutor) {
       return res.status(404).json({ success: false, error: 'Tutor not found' });
@@ -139,7 +146,10 @@ const updateTutorProfile = async (req, res) => {
 };
 
 // Get current tutor's profile
-const getTutorProfile = async (req, res) => {
+const getTutorProfile = async (req, res) =>
+  
+  
+  {
   try {
     const tutorId = req.user.id || req.user.userId;
 
@@ -179,12 +189,11 @@ const getTutorProfile = async (req, res) => {
   }
 };
 
-// Get tutor availability
 const getTutorAvailability = async (req, res) => {
   try {
     const tutorId = req.user.id || req.user.userId;
 
-    // Get tutor profile
+   
     const profile = await prisma.tutorProfile.findUnique({
       where: { userId: tutorId },
       select: {
@@ -192,18 +201,25 @@ const getTutorAvailability = async (req, res) => {
       }
     });
 
-    // If no profile exists, return null availability
+    
     res.json({ 
       success: true, 
       availability: profile?.availability || null 
     });
-  } catch (error) {
+  } 
+  
+  
+  catch (error) 
+  
+  
+  
+  {
     console.error('Get tutor availability error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
-// Update tutor availability string
+
 const updateTutorAvailability = async (req, res) => {
   try {
     const tutorId = req.user.id || req.user.userId;

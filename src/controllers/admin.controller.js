@@ -1,8 +1,13 @@
 const prisma = require('../config/prisma');
 
-// GET /api/admin/stats
-const getAdminStats = async (_req, res) => {
-  try {
+
+const getAdminStats = async (_req, res) => 
+  
+  
+  {
+  try 
+  
+  {
     const [totalUsers, totalTutors, totalStudents, totalBookings] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: 'TUTOR' } }),
@@ -10,7 +15,9 @@ const getAdminStats = async (_req, res) => {
       prisma.booking.count()
     ]);
 
-    res.json({
+    res.json(
+      
+      {
       success: true,
       stats: {
         totalUsers,
@@ -19,16 +26,27 @@ const getAdminStats = async (_req, res) => {
         totalBookings
       }
     });
-  } catch (error) {
-    console.error('Get admin stats error:', error);
+  }
+  
+  
+  catch (error) 
+  
+  
+  
+  {
+    //console.error('Get admin stats error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
-// GET /api/admin/bookings
+
 const getAdminBookings = async (_req, res) => {
   try {
-    const bookings = await prisma.booking.findMany({
+    const bookings = await prisma.booking.findMany(
+      
+      
+      
+      {
       include: {
         student: { select: { id: true, name: true, email: true, role: true } },
         tutor:   { select: { id: true, name: true, email: true, role: true, tutorProfile: true } }
@@ -37,21 +55,33 @@ const getAdminBookings = async (_req, res) => {
     });
 
     res.json({ success: true, bookings });
-  } catch (error) {
-    console.error('Get admin bookings error:', error);
+  } 
+  
+  
+  catch (error) 
+  
+  
+  {
+   // console.error('Get admin bookings error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
 // GET /api/admin/categories
-const getAdminCategories = async (_req, res) => {
+const getAdminCategories = async (_req, res) => 
+  
+  
+  {
   try {
     const categories = await prisma.category.findMany({
       orderBy: { name: 'asc' }
     });
     res.json({ success: true, categories });
-  } catch (error) {
-    console.error('Get admin categories error:', error);
+  }
+  
+  
+  catch (error) {
+    //console.error('Get admin categories error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
@@ -76,18 +106,28 @@ const getAdminUsers = async (req, res) => {
     });
 
     res.json({ success: true, users });
-  } catch (error) {
+  }
+  
+  
+  catch (error) 
+  
+  
+  {
     console.error('Get admin users error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
 // PATCH /api/admin/users/:id (update role or status fields)
-const updateAdminUser = async (req, res) => {
-  try {
+const updateAdminUser = async (req, res) => 
+  
+  {
+  try 
+  
+  
+  {
     const { id } = req.params;
-    const { role, status } = req.body; // status kept for compatibility; stored as role if provided
-
+    const { role, status } = req.body; 
     if (!role && !status) {
       return res.status(400).json({ success: false, error: 'role or status is required' });
     }
@@ -99,7 +139,14 @@ const updateAdminUser = async (req, res) => {
     });
 
     res.json({ success: true, user: updated });
-  } catch (error) {
+  } 
+  
+  
+  catch (error) 
+  
+  
+  
+  {
     console.error('Update admin user error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }

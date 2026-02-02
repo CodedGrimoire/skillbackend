@@ -1,24 +1,38 @@
 const express = require('express');
 const cors = require('cors');
+
+const studentRoutes = require('../routes/student.routes');
+
+const categoryRoutes = require('../routes/category.routes');
+
 const authRoutes = require('../routes/auth.routes');
 const tutorRoutes = require('../routes/tutor.routes');
+
+
 const bookingRoutes = require('../routes/booking.routes');
 const reviewRoutes = require('../routes/review.routes');
-const studentRoutes = require('../routes/student.routes');
+
+
 const adminRoutes = require('../routes/admin.routes');
-const categoryRoutes = require('../routes/category.routes');
+
+
 const { errorHandler, notFoundHandler } = require('../middlewares/error.middleware');
 
 const app = express();
 
 // Middleware
-app.use(cors({
+app.use(cors(
+  
+  {
   origin: process.env.CLIENT_URL || 'http://localhost:3000'
 }));
 app.use(express.json());
 
 // Routes
-app.get('/', (req, res) => {
+app.get('/', (req, res) => 
+  
+  
+  {
   res.json({ 
     success: true,
     message: 'SkillBridge backend running ✅' 
@@ -27,9 +41,15 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/tutors', tutorRoutes);
-app.use('/api/tutor', tutorRoutes); // Also support singular for tutor-specific endpoints
+
+
+app.use('/api/tutor', tutorRoutes); 
+
+
+
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews', reviewRoutes);
+
 app.use('/api/students', studentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);

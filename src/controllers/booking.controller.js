@@ -1,17 +1,19 @@
 const prisma = require('../config/prisma');
 
-// Create a new booking (student books tutor)
-const createBooking = async (req, res) => {
+
+const createBooking = async (req, res) => 
+  
+  {
   try {
     const { tutorId, dateTime } = req.body;
     const studentId = req.user.id || req.user.userId;
 
-    // Validation
+    
     if (!tutorId || !dateTime) {
       return res.status(400).json({ success: false, error: 'Tutor ID and date/time are required' });
     }
 
-    // Verify tutor exists and is actually a tutor
+   
     const tutor = await prisma.user.findFirst({
       where: {
         id: tutorId,
@@ -23,7 +25,7 @@ const createBooking = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Tutor not found' });
     }
 
-    // Verify student exists
+  
     const student = await prisma.user.findUnique({
       where: { id: studentId }
     });
@@ -32,12 +34,12 @@ const createBooking = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Student not found' });
     }
 
-    // Prevent booking yourself
+    
     if (studentId === tutorId) {
       return res.status(400).json({ success: false, error: 'Cannot book yourself' });
     }
 
-    // Create booking
+   
     const booking = await prisma.booking.create({
       data: {
         studentId,
@@ -64,18 +66,29 @@ const createBooking = async (req, res) => {
     });
 
     res.status(201).json({ success: true, booking });
-  } catch (error) {
+  } 
+  
+  
+  
+  catch (error) {
     console.error('Create booking error:', error);
+
+
+
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
 // Get current user's bookings
 const getMyBookings = async (req, res) => {
-  try {
+  try 
+  
+  
+  
+  {
     const userId = req.user.id || req.user.userId;
 
-    // Only students can view their bookings
+    
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
@@ -153,7 +166,7 @@ const getBookings = async (req, res) => {
   }
 };
 
-// Get booking details by id (only participant or admin)
+
 const getBookingById = async (req, res) => {
   try {
     const bookingId = req.params.id;
@@ -190,14 +203,26 @@ const getBookingById = async (req, res) => {
     }
 
     res.json({ success: true, booking });
-  } catch (error) {
-    console.error('Get booking by id error:', error);
+  } 
+  
+  
+  
+  catch (error) 
+  
+  
+  
+  {
+   // console.error('Get booking by id error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
-// Get bookings for current tutor
-const getTutorBookings = async (req, res) => {
+
+const getTutorBookings = async (req, res) =>
+  
+  
+  
+  {
   try {
     const userId = req.user.id || req.user.userId;
 
@@ -230,7 +255,7 @@ const getTutorBookings = async (req, res) => {
   }
 };
 
-// Get booking stats for current student
+
 const getBookingStats = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
@@ -282,7 +307,7 @@ const getBookingStats = async (req, res) => {
   }
 };
 
-// Mark booking as completed
+
 const completeBooking = async (req, res) => {
   try {
     const bookingId = req.params.id || req.body.bookingId;
@@ -306,7 +331,7 @@ const completeBooking = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Booking not found' });
     }
 
-    // Verify user is either the student or tutor (or admin)
+   
     if (
       role !== 'ADMIN' &&
       booking.studentId !== userId &&
@@ -315,7 +340,7 @@ const completeBooking = async (req, res) => {
       return res.status(403).json({ success: false, error: 'You can only complete your own bookings' });
     }
 
-    // Check if booking is already completed
+   
     if (booking.status === 'COMPLETED') {
       return res.status(400).json({ success: false, error: 'Booking is already completed' });
     }
@@ -336,7 +361,14 @@ const completeBooking = async (req, res) => {
     });
 
     res.json({ success: true, booking: updatedBooking });
-  } catch (error) {
+  } 
+  
+  
+  
+  catch (error) 
+  
+  
+  {
     console.error('Complete booking error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
