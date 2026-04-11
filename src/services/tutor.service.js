@@ -38,6 +38,133 @@ const buildOrderBy = (sort) => {
   }
 };
 
+const parseCSV = (value) => {
+  if (!value || typeof value !== 'string') return [];
+  return value
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+const deriveBadges = ({ rating, availability, createdAt }) => {
+  const badges = [];
+  if (rating >= 4.8) badges.push('Top rated');
+  if (availability && /online/i.test(availability)) badges.push('Online');
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  if (createdAt && createdAt > thirtyDaysAgo) badges.push('New tutor');
+  return badges;
+};
+
+const getTutorDetail = async (id) => {
+  const tutor = await prisma.user.findUnique({
+    where: { id, role: 'TUTOR' },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      createdAt: true,
+      tutorProfile: {
+        select: {
+          bio: true,
+          skills: true,
+          hourlyRate: true,
+          availability: true,
+          rating: true
+        }
+      }
+    }
+  });
+
+  if (!tutor) return null;
+
+  const [reviewsAgg, reviewsList] = await Promise.all([
+    prisma.review.aggregate({
+      where: { tutorId: id },
+      _avg: { rating: true },
+      _count: { id: true }
+    }),
+    prisma.review.findMany({
+      where: { tutorId: id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        student: { select: { name: true } }
+      }
+    })
+  ]);
+
+  const profile = tutor.tutorProfile || {};
+  const rating = profile.rating ?? reviewsAgg._avg.rating ?? 0;
+  const reviewCount = reviewsAgg._count.id || 0;
+
+  const skills = parseCSV(profile.skills);
+  const languages = []; // not stored yet
+
+  const badges = deriveBadges({ rating, availability: profile.availability, createdAt: tutor.createdAt });
+
+  const reviews = reviewsList.map((r) => ({
+    id: r.id,
+    reviewer: r.student?.name || 'Anonymous',
+    rating: r.rating,
+    comment: r.comment || '',
+    date: r.createdAt
+  }));
+
+  return {
+    id: tutor.id,
+    name: tutor.name,
+    email: tutor.email,
+    subject: null,
+    category: null,
+    hourlyRate: profile.hourlyRate ?? 0,
+    rating,
+    reviewCount,
+    bio: profile.bio || '',
+    headline: '',
+    badges,
+    mode: profile.availability && /online/i.test(profile.availability) ? 'Online' : null,
+    location: null,
+    languages,
+    experience: '',
+    skills,
+    reviews,
+    media: [],
+    availability: profile.availability || null
+  };
+};
+
+const getRelatedTutors = async (id, limit = 4) => {
+  const base = await prisma.user.findUnique({
+    where: { id },
+    select: { tutorProfile: { select: { skills: true } } }
+  });
+  if (!base || !base.tutorProfile?.skills) return [];
+  const firstSkill = parseCSV(base.tutorProfile.skills)[0];
+  if (!firstSkill) return [];
+
+  const tutors = await prisma.user.findMany({
+    where: {
+      role: 'TUTOR',
+      id: { not: id },
+      tutorProfile: { skills: { contains: firstSkill, mode: 'insensitive' } }
+    },
+    take: limit,
+    select: {
+      id: true,
+      name: true,
+      tutorProfile: { select: { hourlyRate: true, rating: true, skills: true } }
+    }
+  });
+
+  return tutors.map((t) => ({
+    id: t.id,
+    name: t.name,
+    hourlyRate: t.tutorProfile?.hourlyRate ?? 0,
+    rating: t.tutorProfile?.rating ?? 0,
+    skills: parseCSV(t.tutorProfile?.skills)
+  }));
+};
+
 const listTutors = async (query = {}) => {
   const page = toPositiveInt(query.page, 1, { min: 1, max: 1000 });
   const pageSize = toPositiveInt(query.pageSize, 12, { min: 1, max: 100 });
@@ -127,5 +254,7 @@ const listTutors = async (query = {}) => {
 };
 
 module.exports = {
-  listTutors
+  listTutors,
+  getTutorDetail,
+  getRelatedTutors
 };

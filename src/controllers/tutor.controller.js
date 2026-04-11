@@ -1,5 +1,5 @@
 const prisma = require('../config/prisma');
-const { listTutors } = require('../services/tutor.service');
+const { listTutors, getTutorDetail, getRelatedTutors } = require('../services/tutor.service');
 const { getTutorDashboard } = require('../services/tutor-dashboard.service');
 const {
   getTutorAvailability: getAvailabilityService,
@@ -21,38 +21,27 @@ const getTutorById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const tutor = await prisma.user.findFirst({
-      where: {
-        id,
-        role: 'TUTOR'
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        tutorProfile: {
-          select: {
-            id: true,
-            bio: true,
-            skills: true,
-            hourlyRate: true,
-            availability: true,
-            rating: true
-          }
-        }
-      }
-    });
+    const tutor = await getTutorDetail(id);
 
     if (!tutor) {
-      return res.status(404).json({ error: 'Tutor not found' });
+      return res.status(404).json({ success: false, error: 'Tutor not found' });
     }
 
-    res.json({ tutor });
+    res.json({ success: true, data: tutor, tutor });
   } catch (error) {
     console.error('Get tutor by ID error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
+const getRelatedTutorsController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const related = await getRelatedTutors(id);
+    res.json({ success: true, data: related });
+  } catch (error) {
+    console.error('Get related tutors error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
@@ -201,5 +190,6 @@ module.exports = {
   getTutorProfile,
   getTutorAvailability,
   updateTutorProfile,
-  updateTutorAvailability
+  updateTutorAvailability,
+  getRelatedTutorsController
 };

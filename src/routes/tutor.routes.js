@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getTutors, getTutorById, getTutorProfile, getTutorAvailability, updateTutorProfile, updateTutorAvailability, getTutorDashboardController } = require('../controllers/tutor.controller');
+const { getTutors, getTutorById, getTutorProfile, getTutorAvailability, updateTutorProfile, updateTutorAvailability, getTutorDashboardController, getRelatedTutorsController } = require('../controllers/tutor.controller');
 const { authenticate } = require('../middlewares/auth.middleware');
 const { authorizeRoles } = require('../middlewares/role.middleware');
 
@@ -14,6 +14,7 @@ router.get('/dashboard', authenticate, authorizeRoles('TUTOR'), getTutorDashboar
 
 router.get('/availability', authenticate, authorizeRoles('TUTOR'), getTutorAvailability);
 router.put('/availability', authenticate, authorizeRoles('TUTOR'), updateTutorAvailability);
+router.get('/:id/related', getRelatedTutorsController);
 router.get('/:id', getTutorById);
 
 
