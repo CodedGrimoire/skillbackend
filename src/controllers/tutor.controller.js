@@ -1,8 +1,10 @@
 const prisma = require('../config/prisma');
 const { listTutors } = require('../services/tutor.service');
 const { getTutorDashboard } = require('../services/tutor-dashboard.service');
-
-
+const {
+  getTutorAvailability: getAvailabilityService,
+  updateTutorAvailability: updateAvailabilityService
+} = require('../services/tutor-availability.service');
 
 const getTutors = async (req, res) => {
   try {
@@ -154,30 +156,15 @@ const getTutorProfile = async (req, res) =>
 };
 
 const getTutorAvailability = async (req, res) => {
+  const tutorId = req.user?.id || req.user?.userId;
+  if (!tutorId || req.user?.role !== 'TUTOR') {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
+  }
+
   try {
-    const tutorId = req.user.id || req.user.userId;
-
-   
-    const profile = await prisma.tutorProfile.findUnique({
-      where: { userId: tutorId },
-      select: {
-        availability: true
-      }
-    });
-
-    
-    res.json({ 
-      success: true, 
-      availability: profile?.availability || null 
-    });
-  } 
-  
-  
-  catch (error) 
-  
-  
-  
-  {
+    const availability = await getAvailabilityService(tutorId);
+    res.json({ success: true, data: { availability } });
+  } catch (error) {
     console.error('Get tutor availability error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
@@ -185,28 +172,23 @@ const getTutorAvailability = async (req, res) => {
 
 
 const updateTutorAvailability = async (req, res) => {
+  const tutorId = req.user?.id || req.user?.userId;
+  if (!tutorId || req.user?.role !== 'TUTOR') {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
+  }
+
+  const { availability } = req.body || {};
+  if (availability === undefined) {
+    return res.status(400).json({ success: false, error: 'availability is required' });
+  }
+
   try {
-    const tutorId = req.user.id || req.user.userId;
-    const { availability } = req.body;
-
-    if (availability === undefined || availability === null || availability === '') {
-      return res.status(400).json({ success: false, error: 'availability is required' });
-    }
-
-    // Ensure tutor exists
-    const tutor = await prisma.user.findUnique({ where: { id: tutorId, role: 'TUTOR' } });
-    if (!tutor) {
-      return res.status(404).json({ success: false, error: 'Tutor not found' });
-    }
-
-    const profile = await prisma.tutorProfile.upsert({
-      where: { userId: tutorId },
-      update: { availability },
-      create: { userId: tutorId, availability }
-    });
-
-    res.json({ success: true, profile });
+    const normalized = await updateAvailabilityService(tutorId, availability);
+    res.json({ success: true, message: 'Availability updated successfully', data: { availability: normalized } });
   } catch (error) {
+    if (error.code == 'BAD_PAYLOAD') {
+      return res.status(400).json({ success: false, error: 'Invalid availability payload' });
+    }
     console.error('Update tutor availability error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
