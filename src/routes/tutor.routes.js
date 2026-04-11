@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getTutors, getTutorById, getTutorProfile, getTutorAvailability, updateTutorProfile, updateTutorAvailability } = require('../controllers/tutor.controller');
+const { getTutors, getTutorById, getTutorProfile, getTutorAvailability, updateTutorProfile, updateTutorAvailability, getTutorDashboardController } = require('../controllers/tutor.controller');
 const { authenticate } = require('../middlewares/auth.middleware');
 const { authorizeRoles } = require('../middlewares/role.middleware');
 
@@ -8,6 +8,7 @@ router.get('/', getTutors);
 // Specific routes must come before parameterized routes
 router.get('/profile', authenticate, authorizeRoles('TUTOR'), getTutorProfile);
 router.put('/profile', authenticate, authorizeRoles('TUTOR'), updateTutorProfile);
+router.get('/dashboard', authenticate, authorizeRoles('TUTOR'), getTutorDashboardController);
 
 
 

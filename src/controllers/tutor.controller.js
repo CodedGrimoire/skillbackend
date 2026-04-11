@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const { listTutors } = require('../services/tutor.service');
+const { getTutorDashboard } = require('../services/tutor-dashboard.service');
 
 
 
@@ -53,9 +54,20 @@ const getTutorById = async (req, res) => {
   }
 };
 
-module.exports = {
-  getTutors,
-  getTutorById
+const getTutorDashboardController = async (req, res) => {
+  const tutorId = req.user?.id || req.user?.userId;
+
+  if (!tutorId || req.user?.role !== 'TUTOR') {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
+  }
+
+  try {
+    const data = await getTutorDashboard(tutorId);
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Get tutor dashboard error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
 };
 
 // Update tutor profile (bio, skills, hourlyRate)
@@ -203,6 +215,7 @@ const updateTutorAvailability = async (req, res) => {
 module.exports = {
   getTutors,
   getTutorById,
+  getTutorDashboardController,
   getTutorProfile,
   getTutorAvailability,
   updateTutorProfile,
