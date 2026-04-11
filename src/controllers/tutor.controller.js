@@ -1,60 +1,12 @@
 const prisma = require('../config/prisma');
+const { listTutors } = require('../services/tutor.service');
 
 
-const getTutors = async (req, res) => 
-  
-  
-  
-  {
-  try 
-  
-  
-  {
-    const { search, minRate, maxRate, minRating } = req.query;
 
-    const where = {
-      role: 'TUTOR',
-      ...(search
-        ? {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' } },
-              { email: { contains: search, mode: 'insensitive' } },
-              { tutorProfile: { skills: { contains: search, mode: 'insensitive' } } }
-            ]
-          }
-        : {})
-    };
-
-    // Nested filters for tutorProfile numbers
-    const profileFilter = {
-      ...(minRate ? { hourlyRate: { gte: parseFloat(minRate) } } : {}),
-      ...(maxRate ? { hourlyRate: { lte: parseFloat(maxRate) } } : {}),
-      ...(minRating ? { rating: { gte: parseFloat(minRating) } } : {})
-    };
-
-    const tutors = await prisma.user.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        tutorProfile: {
-          select: {
-            id: true,
-            bio: true,
-            skills: true,
-            hourlyRate: true,
-            availability: true,
-            rating: true
-          },
-          where: Object.keys(profileFilter).length ? profileFilter : undefined
-        }
-      }
-    });
-
-    res.json({ success: true, tutors });
+const getTutors = async (req, res) => {
+  try {
+    const result = await listTutors(req.query);
+    res.json({ success: true, ...result });
   } catch (error) {
     console.error('Get tutors error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
