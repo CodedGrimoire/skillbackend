@@ -33,13 +33,62 @@ const getAdminBookings = async (_req, res) => {
 };
 
 // GET /api/admin/categories
+const { listCategoriesWithUsage, createCategory, updateCategory, deleteCategory } = require('../services/admin.service');
+
 const getAdminCategories = async (_req, res) => {
   try {
-    const categories = await prisma.category.findMany({
-      orderBy: { name: 'asc' }
-    });
+    const categories = await listCategoriesWithUsage();
     res.json({ success: true, categories });
   } catch (error) {
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
+const createAdminCategory = async (req, res) => {
+  try {
+    const { name } = req.body || {};
+    const category = await createCategory(name);
+    res.json({ success: true, message: 'Category created successfully', data: category });
+  } catch (error) {
+    if (error.code === 'BAD_INPUT') {
+      return res.status(400).json({ success: false, error: 'Name is required' });
+    }
+    if (error.code === 'DUPLICATE') {
+      return res.status(400).json({ success: false, error: 'Category name already exists' });
+    }
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
+const updateAdminCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name } = req.body || {};
+    const category = await updateCategory(id, name);
+    res.json({ success: true, message: 'Category updated successfully', data: category });
+  } catch (error) {
+    if (error.code === 'BAD_INPUT') {
+      return res.status(400).json({ success: false, error: 'Name is required' });
+    }
+    if (error.code === 'DUPLICATE') {
+      return res.status(400).json({ success: false, error: 'Category name already exists' });
+    }
+    if (error.code === 'NOT_FOUND') {
+      return res.status(404).json({ success: false, error: 'Category not found' });
+    }
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
+const deleteAdminCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await deleteCategory(id);
+    res.json({ success: true, message: 'Category deleted successfully' });
+  } catch (error) {
+    if (error.code === 'NOT_FOUND') {
+      return res.status(404).json({ success: false, error: 'Category not found' });
+    }
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
@@ -146,4 +195,4 @@ const setBookingStatus = async (req, res) => {
   }
 };
 
-module.exports = { getAdminStats, getAdminUsers, getAdminBookings, getAdminCategories, updateAdminUser, setUserStatus, setBookingStatus };
+module.exports = { getAdminStats, getAdminUsers, getAdminBookings, getAdminCategories, updateAdminUser, setUserStatus, setBookingStatus, createAdminCategory, updateAdminCategory, deleteAdminCategory };
