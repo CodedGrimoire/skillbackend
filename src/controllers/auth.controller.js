@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/prisma');
+const { socialAuth } = require('../services/social-auth.service');
 
 // Register new user
 const register = async (req, res) => {
@@ -129,8 +130,36 @@ const getMe = async (req, res) => {
   }
 };
 
+// Social login
+const socialLogin = async (req, res) => {
+  try {
+    const { provider, idToken } = req.body || {};
+    const result = await socialAuth({ provider, idToken });
+    res.json({ success: true, message: 'Social login successful', data: { token: result.token, user: result.user } });
+  } catch (error) {
+    if (error.code === 'BAD_INPUT') {
+      return res.status(400).json({ success: false, error: error.message });
+    }
+    if (error.code === 'UNSUPPORTED') {
+      return res.status(400).json({ success: false, error: 'Provider not supported yet' });
+    }
+    if (error.code === 'CONFIG_MISSING') {
+      return res.status(500).json({ success: false, error: 'Social auth not configured' });
+    }
+    if (error.code === 'INVALID_TOKEN') {
+      return res.status(401).json({ success: false, error: 'Invalid social token' });
+    }
+    if (error.code === 'BANNED') {
+      return res.status(403).json({ success: false, error: 'User is banned' });
+    }
+    console.error('Social login error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
 module.exports = {
   register,
   login,
-  getMe
+  getMe,
+  socialLogin
 };

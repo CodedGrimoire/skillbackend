@@ -36,6 +36,8 @@ model User {
   status       UserStatus    @default(ACTIVE)
   timezone     String?
   preferences  String?
+  authProvider String?
+  socialId     String?
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
   tutorProfile TutorProfile?
