@@ -14,6 +14,7 @@ const reviewRoutes = require('../routes/review.routes');
 
 
 const adminRoutes = require('../routes/admin.routes');
+const profileRoutes = require('../routes/profile.routes');
 
 
 const { errorHandler, notFoundHandler } = require('../middlewares/error.middleware');
@@ -49,6 +50,7 @@ app.use('/api/tutor', tutorRoutes);
 
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/profile', profileRoutes);
 
 app.use('/api/students', studentRoutes);
 app.use('/api/admin', adminRoutes);
